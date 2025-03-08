@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    /* Base Styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 16px;
+      font-size: 14px;
+      color: #333;
+    }
+
+    h1 {
+      font-size: 20px;
+      margin-bottom: 15px;
+      color: #1a73e8;
+    }
+
+    h2 {
+      font-size: 16px;
+      margin-bottom: 10px;
+      color: #444;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    button {
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #185abc;
+    }
+
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    .error {
+      color: #d93025;
+      margin: 10px 0;
+    }
+
+    .success {
+      color: #188038;
+      margin: 10px 0;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #ccc;
+      margin-bottom: 15px;
+    }
+
+    .tab {
+      padding: 8px 16px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-bottom: none;
+      margin-bottom: -1px;
+      background-color: #f5f5f5;
+    }
+
+    .tab.active {
+      background-color: white;
+      border-color: #ccc;
+      border-bottom-color: white;
+    }
+
+    .tab-content {
+      display: none;
+      padding-bottom: 20px;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Loader */
+    .loader {
+      border: 3px solid #f3f3f3;
+      border-radius: 50%;
+      border-top: 3px solid #1a73e8;
+      width: 16px;
+      height: 16px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Chat Section */
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 250px);
+      min-height: 300px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      background-color: #f9f9f9;
+    }
+
+    .chat-input-container {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #ddd;
+      background-color: white;
+    }
+
+    .chat-input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-right: 8px;
+    }
+
+    .chat-send-btn {
+      white-space: nowrap;
+    }
+
+    .message {
+      margin-bottom: 10px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      max-width: 85%;
+      word-wrap: break-word;
+    }
+
+    .user-message {
+      background-color: #e3f2fd;
+      align-self: flex-end;
+      margin-left: auto;
+    }
+
+    .ai-message {
+      background-color: #f1f3f4;
+      align-self: flex-start;
+      margin-right: auto;
+    }
+
+    /* Document Creation Forms */
+    .radio-group {
+      display: flex;
+      margin-bottom: 15px;
+    }
+
+    .radio-option {
+      margin-right: 15px;
+    }
+
+    /* Job Posting Section */
+    .job-form {
+      margin-bottom: 20px;
+    }
+
+    /* Results Section */
+    .result-links {
+      margin-top: 15px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: #f9f9f9;
+    }
+
+    .result-links a {
+      display: block;
+      margin-bottom: 8px;
+      color: #1a73e8;
+      text-decoration: none;
+    }
+
+    .result-links a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h1>Resume & Cover Letter Assistant</h1>
+  
+  <div class="tabs">
+    <div class="tab active" data-tab="create">Create New</div>
+    <div class="tab" data-tab="job">Job Application</div>
+    <div class="tab" data-tab="format">Format & Style</div>
+  </div>
+  
+  <div class="tab-content active" id="create-tab">
+    <div id="document-status" class="status-box hidden">
+      <h3>Current Document</h3>
+      <div id="current-doc-info"></div>
+      <button id="use-current-btn">Use Current Content</button>
+      <button id="start-fresh-btn">Start Fresh</button>
+    </div>
+
+    <div id="creation-options" class="options-box">
+      <h3>Create New Document</h3>
+      <div class="form-group">
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" name="docType" value="resume" checked> Resume/CV
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="docType" value="cover"> Cover Letter
+          </label>
+        </div>
+      </div>
+      
+      <div class="form-group" id="style-group">
+        <label for="doc-style">Document Style:</label>
+        <select id="doc-style">
+          <option value="standard">Standard Professional</option>
+          <option value="modern">Modern Clean</option>
+          <option value="executive">Executive</option>
+          <option value="creative">Creative</option>
+          <option value="academic">Academic</option>
+        </select>
+      </div>
+      
+      <button id="startGuidedBtn" class="primary-button">Start Guided Creation</button>
+    </div>
+
+    <div id="chat-section" class="hidden">
+      <div class="chat-container">
+        <div id="chat-messages" class="chat-messages"></div>
+        <div class="chat-input-container">
+          <textarea id="chat-input" class="chat-input" 
+                    placeholder="Type your message... (Shift+Enter for new line)"
+                    rows="2"></textarea>
+          <button id="chat-send-btn" class="chat-send-btn">Send</button>
+        </div>
+      </div>
+      
+      <div class="chat-actions">
+        <button id="insert-suggestion-btn" class="hidden">Insert Suggestion</button>
+        <button id="generate-doc-btn" class="hidden">Generate Full Document</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="tab-content" id="job-tab">
+    <h2>Job-Specific Application</h2>
+    
+    <div class="job-form">
+      <div class="form-group">
+        <label for="job-url">Job Posting URL</label>
+        <input type="text" id="job-url" placeholder="Paste job posting URL or Document ID">
+      </div>
+      
+      <div class="form-group">
+        <label for="resume-file">Upload Resume or Select Document</label>
+        <select id="resume-file">
+          <option value="">Select a document...</option>
+          <option value="current">Use current document</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <button id="analyze-job-btn">Analyze & Create Application</button>
+      </div>
+    </div>
+    
+    <div id="job-analysis-result" class="hidden">
+      <h3>Job Analysis</h3>
+      <div id="job-keywords"></div>
+      
+      <div class="form-group">
+        <button id="create-job-docs-btn">Create Resume & Cover Letter</button>
+      </div>
+    </div>
+    
+    <div id="job-result" class="result-links hidden"></div>
+  </div>
+  
+  <div class="tab-content" id="format-tab">
+    <h2>Format Current Document</h2>
+    
+    <div class="form-group">
+      <label for="style-template">Select Style Template</label>
+      <select id="style-template">
+        <option value="google-xyz">Google XYZ Format</option>
+        <option value="modern-professional">Modern Professional</option>
+        <option value="academic-cv">Academic CV</option>
+        <option value="creative">Creative Professional</option>
+        <option value="executive">Executive</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <button id="apply-style-btn">Apply Style</button>
+    </div>
+    
+    <div class="form-group">
+      <label for="ai-improve-prompt">AI Improvement Suggestion</label>
+      <textarea id="ai-improve-prompt" placeholder="Example: Make my experience section more impactful"></textarea>
+    </div>
+    
+    <div class="form-group">
+      <button id="ai-improve-btn">Get AI Suggestions</button>
+    </div>
+    
+    <div id="format-result" class="hidden"></div>
+  </div>
+  
+  <div id="status-message"></div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set up tabs
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+          const tabId = this.dataset.tab;
+          
+          // Update active tab
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          this.classList.add('active');
+          
+          // Show relevant content
+          document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+          });
+          document.getElementById(`${tabId}-tab`).classList.add('active');
+        });
+      });
+      
+      // Start guided creation button
+      document.getElementById('startGuidedBtn').addEventListener('click', function() {
+        const docType = document.querySelector('input[name="docType"]:checked').value;
+        const docStyle = document.getElementById('doc-style').value;
+        startGuidedSession(docType, docStyle);
+      });
+      
+      // Update document style dropdown visibility based on document type
+      document.querySelectorAll('input[name="docType"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+          const docStyleContainer = document.getElementById('doc-style').parentElement;
+          docStyleContainer.style.display = this.value === 'resume' ? 'block' : 'none';
+        });
+      });
+      
+      // Initialize document style visibility
+      document.getElementById('doc-style').parentElement.style.display = 
+        document.querySelector('input[name="docType"]:checked').value === 'resume' ? 'block' : 'none';
+      
+      // Chat send button
+      document.getElementById('chat-send-btn').addEventListener('click', function() {
+        sendChatMessage();
+      });
+      
+      // Chat input enter key handler
+      document.getElementById('chat-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          sendChatMessage();
+        }
+      });
+      
+      // Generate document button
+      document.getElementById('generate-doc-btn').addEventListener('click', function() {
+        generateDocumentFromChat();
+      });
+      
+      // Job analysis button
+      document.getElementById('analyze-job-btn').addEventListener('click', function() {
+        analyzeJobPosting();
+      });
+      
+      // Create job docs button
+      document.getElementById('create-job-docs-btn').addEventListener('click', function() {
+        createJobDocuments();
+      });
+      
+      // Apply style button
+      document.getElementById('apply-style-btn').addEventListener('click', function() {
+        applyStyleToDocument();
+      });
+      
+      // AI improve button
+      document.getElementById('ai-improve-btn').addEventListener('click', function() {
+        getAIImprovements();
+      });
+      
+      // Load available documents for resume selection
+      loadAvailableDocuments();
+    });
+    
+    function startGuidedSession(docType, docStyle) {
+      showStatus('Starting guided session...');
+      document.getElementById('chat-section').classList.remove('hidden');
+      document.getElementById('chat-messages').innerHTML = '';
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.error) {
+            showError(result.message);
+            return;
+          }
+          
+          addMessageToChat('ai', result.text);
+          hideStatus();
+        })
+        .withFailureHandler(handleError)
+        .startGuidedChatSession(docType, docStyle);
+    }
+    
+    function sendChatMessage() {
+      const input = document.getElementById('chat-input');
+      const message = input.value.trim();
+      
+      if (!message) return;
+      
+      addMessageToChat('user', message);
+      input.value = '';
+      showStatus('Thinking...');
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.error) {
+            showError(result.message);
+            return;
+          }
+          
+          addMessageToChat('ai', result.text);
+          hideStatus();
+          
+          // Check if document is ready to generate
+          if (result.documentReady) {
+            document.getElementById('generate-doc-btn').classList.remove('hidden');
+          }
+        })
+        .withFailureHandler(handleError)
+        .continueChatSession(message);
+    }
+    
+    function addMessageToChat(role, text) {
+      const messagesDiv = document.getElementById('chat-messages');
+      const messageDiv = document.createElement('div');
+      messageDiv.classList.add('message');
+      messageDiv.classList.add(role === 'user' ? 'user-message' : 'ai-message');
+      
+      // Convert line breaks to HTML breaks
+      text = text.replace(/\n/g, '<br>');
+      messageDiv.innerHTML = text;
+      
+      messagesDiv.appendChild(messageDiv);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+    
+    function generateDocumentFromChat() {
+      showStatus('Generating document...');
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.error) {
+            showError(result.message);
+            return;
+          }
+          
+          const resultDiv = document.getElementById('chat-result');
+          resultDiv.innerHTML = `
+            <p>Document created successfully!</p>
+            <a href="${result.url}" target="_blank">Open Document</a>
+          `;
+          resultDiv.classList.remove('hidden');
+          hideStatus();
+        })
+        .withFailureHandler(handleError)
+        .generateDocumentFromChat();
+    }
+    
+    function analyzeJobPosting() {
+      const jobUrl = document.getElementById('job-url').value.trim();
+      const resumeId = document.getElementById('resume-file').value;
+      
+      if (!jobUrl) {
+        showError('Please enter a job posting URL');
+        return;
+      }
+      
+      showStatus('Analyzing job posting...');
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.error) {
+            showError(result.message);
+            return;
+          }
+          
+          document.getElementById('job-keywords').innerHTML = `
+            <p><strong>Company:</strong> ${result.company}</p>
+            <p><strong>Position:</strong> ${result.position}</p>
+            <div class="keywords-list">
+              <p><strong>Key Skills & Requirements:</strong></p>
+              <ul>
+                ${result.keywords.map(k => `<li>${k}</li>`).join('')}
+              </ul>
+            </div>
+          `;
+          
+          document.getElementById('job-analysis-result').classList.remove('hidden');
+          hideStatus();
+        })
+        .withFailureHandler(handleError)
+        .analyzeJobPosting(jobUrl, resumeId);
+    }
+    
+    function createJobDocuments() {
+      const jobUrl = document.getElementById('job-url').value.trim();
+      const resumeId = document.getElementById('resume-file').value;
+      
+      showStatus('Creating tailored documents...');
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.error) {
+            showError(result.message);
+            return;
+          }
+          
+          const resultDiv = document.getElementById('job-result');
+          resultDiv.innerHTML = `
+            <p>Documents created successfully!</p>
+            <a href="${result.resumeUrl}" target="_blank">Open Tailored Resume</a>
+            <a href="${result.coverUrl}" target="_blank">Open Cover Letter</a>
+            <a href="${result.folderUrl}" target="_blank">Open Documents Folder</a>
+          `;
+          resultDiv.classList.remove('hidden');
+          hideStatus();
+        })
+        .withFailureHandler(handleError)
+        .createJobSpecificDocumentsFromData(resumeId, jobUrl);
+    }
+    
+    function applyStyleToDocument() {
+      const template = document.getElementById('style-template').value;
+      const statusMsg = document.getElementById('status-message');
+      
+      showStatus('Formatting document...');
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.error) {
+            showError(result.message);
+            return;
+          }
+          showSuccess('Document formatted successfully!');
+          
+          // Refresh the document preview if available
+          if (typeof refreshDocumentPreview === 'function') {
+            refreshDocumentPreview();
+          }
+        })
+        .withFailureHandler(handleError)
+        .formatCurrentDocument(template);
+    }
+    
+    function getAIImprovements() {
+      const prompt = document.getElementById('ai-improve-prompt').value.trim();
+      
+      if (!prompt) {
+        showError('Please enter an improvement request');
+        return;
+      }
+      
+      showStatus('Getting AI suggestions...');
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.error) {
+            showError(result.message);
+            return;
+          }
+          
+          document.getElementById('format-result').innerHTML = `
+            <div class="success">
+              <p>${result.message}</p>
+              <p>Check your document for the improvements.</p>
+            </div>
+          `;
+          document.getElementById('format-result').classList.remove('hidden');
+          hideStatus();
+        })
+        .withFailureHandler(handleError)
+        .updateDocumentWithAI(prompt);
+    }
+    
+    function loadAvailableDocuments() {
+      google.script.run
+        .withSuccessHandler(function(docs) {
+          const select = document.getElementById('resume-file');
+          
+          docs.forEach(doc => {
+            const option = document.createElement('option');
+            option.value = doc.id;
+            option.text = doc.name;
+            select.add(option);
+          });
+        })
+        .getRecentDocuments(5);
+    }
+    
+    function showStatus(message) {
+      const statusDiv = document.getElementById('status-message');
+      statusDiv.innerHTML = `<div class="loader"></div> ${message}`;
+      statusDiv.className = '';
+    }
+    
+    function hideStatus() {
+      document.getElementById('status-message').innerHTML = '';
+    }
+    
+    function showError(message) {
+      const statusDiv = document.getElementById('status-message');
+      statusDiv.textContent = message;
+      statusDiv.className = 'error';
+    }
+    
+    function showSuccess(message) {
+      const statusDiv = document.getElementById('status-message');
+      statusDiv.textContent = message;
+      statusDiv.className = 'success';
+      
+      // Auto-hide success message after 3 seconds
+      setTimeout(() => {
+        statusDiv.textContent = '';
+        statusDiv.className = '';
+      }, 3000);
+    }
+    
+    function handleError(error) {
+      console.error('Error:', error);
+      showError('Error: ' + error.toString());
+    }
+  </script>
+  <script>
+    // Check for existing document content on load
+    document.addEventListener('DOMContentLoaded', function() {
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.exists) {
+            // Show document status section
+            const statusBox = document.getElementById('document-status');
+            const docInfo = document.getElementById('current-doc-info');
+            statusBox.classList.remove('hidden');
+            
+            docInfo.innerHTML = `
+              <p>Type: ${result.type || 'Document'}</p>
+              <p>Words: ${result.wordCount}</p>
+              <p>Sections: ${result.sections.length}</p>
+            `;
+          }
+        })
+        .analyzeExistingDocument();
+    });
+
+    // Handle "Use Current Content" button
+    document.getElementById('use-current-btn').addEventListener('click', function() {
+      const docType = document.querySelector('input[name="docType"]:checked').value;
+      startGuidedChatWithContext(docType);
+    });
+
+    // Enhanced chat input handling
+    document.getElementById('chat-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendChatMessage();
+      }
+    });
+
+    // Insert suggestion button handler
+    document.getElementById('insert-suggestion-btn').addEventListener('click', function() {
+      const lastMessage = document.querySelector('.ai-message:last-child');
+      if (lastMessage) {
+        const content = lastMessage.textContent;
+        google.script.run
+          .withSuccessHandler(function(result) {
+            if (result.success) {
+              showSuccess('Content inserted successfully');
+            } else {
+              showError(result.message);
+            }
+          })
+          .insertAIContentIntoDocument(content, { format: 'markdown' });
+      }
+    });
+
+    // ... existing code ...
+  </script>
+</body>
+</html>

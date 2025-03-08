@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start; /* Align items to the left */
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .form-group, .custom-style-form{
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      margin-bottom: 15px;
+    }
+
+    label {
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="number"],
+    input[type="color"],
+    select {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        margin-bottom: 10px; /* Add margin to inputs*/
+    }
+
+    select.font-select{
+        width: 200px;
+    }
+
+
+    .color-picker {
+        display: flex;
+        align-items: center;
+    }
+
+    .color-picker input[type="color"] {
+        width: 50px;
+        height: 30px;
+        margin-right: 10px;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;    
+    }
+
+    .color-picker span {
+        border: 1px solid #ccc;
+        padding: 5px;
+        border-radius: 4px;
+    }
+    .tabs {
+        display: flex;
+        margin-bottom: 20px;
+    }
+
+    .tab {
+      padding: 10px 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px 4px 0 0;
+      cursor: pointer;
+      background-color: #f0f0f0;
+      margin-right: 5px;
+    }
+
+    .tab.active {
+        background-color: white;
+        border-bottom: 1px solid white;
+    }
+
+    .tab-content {
+      display: none;
+      border: 1px solid #ccc;
+      padding: 20px;
+      border-radius: 0 4px 4px 4px;
+    }
+
+
+    .tab-content.active {
+        display: block;
+    }
+
+
+    .model-info {
+      font-size: small;
+      color: #666;
+      margin-top: 5px;
+    }
+
+    .button-row {
+        display: flex;
+        margin-top: 20px;
+        justify-content: flex-end;/* Align buttons to right */
+    }
+    button {
+        background-color: #1a73e8;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    button.secondary{
+        background-color: #f0f0f0;
+        color: black;
+        margin-left: 10px;
+    }
+
+    button:disabled {
+        background-color: #ccc;
+        cursor: default;
+    }
+    .hidden{
+        display:none;
+    }
+    #validationMessage{
+        margin-top: 10px;
+        font-weight: bold;
+        padding: 8px;
+    }
+    .valid {
+      color: green;
+      border: 1px solid green;
+    }
+
+    .invalid {
+      color: red;
+      border: 1px solid red;
+    }
+    .style-preview{
+        margin-top: 20px;
+        border: 1px solid #ccc;
+        padding: 20px;
+        border-radius: 4px;
+    }
+    .loader {
+        border: 4px solid #f3f3f3; /* Light grey */
+        border-top: 4px solid #3498db; /* Blue */
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        animation: spin 2s linear infinite;
+        display: inline-block;
+        margin-right: 5px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    #status-message{
+        margin-top: 10px;
+        font-weight: bold;
+        padding: 8px;
+    }
+    .success {
+      color: green;
+      border: 1px solid green;
+    }
+    .error {
+      color: red;
+      border: 1px solid red;
+    }
+   
+  </style>
+</head>
+<body>
+  <h1>Settings</h1>
+  
+  <div class="tabs">
+    <div class="tab active" data-tab="api">API Key</div>
+    <div class="tab" data-tab="styles">Custom Styles</div>
+    <div class="tab" data-tab="advanced">Advanced</div>
+  </div>
+  
+  <div class="tab-content active" id="api-tab">
+    <div class="form-group">
+      <label for="api-key">Gemini API Key</label>
+      <input type="password" id="api-key" placeholder="Enter your API key from https://aistudio.google.com/">
+      <button id="validate-btn">Validate Key</button>
+      <div id="validationMessage" class="hidden"></div>
+    </div>
+    
+    <div class="form-group">
+      <label for="model-select">Default Model</label>
+      <select id="model-select">
+        <option value="gemini-1.5-flash">Gemini 1.5 Flash (Fast)</option>
+        <option value="gemini-1.5-pro">Gemini 1.5 Pro (Powerful)</option>
+      </select>
+      <div class="model-info">The model is used for generating content. Flash is faster but Pro may produce better quality results.</div>
+    </div>
+  </div>
+  
+  <div class="tab-content" id="styles-tab">
+    <h2>Create Custom Style</h2>
+    
+    <div class="custom-style-form">
+      <label for="style-name">Style Name:</label>
+      <input type="text" id="style-name" placeholder="My Custom Style">
+      
+      <label for="heading-font">Heading Font:</label>
+      <select id="heading-font" class="font-select"></select>
+      
+      <label for="body-font">Body Font:</label>
+      <select id="body-font" class="font-select"></select>
+      
+      <label for="heading-size">Heading Size:</label>
+      <input type="number" id="heading-size" min="10" max="24" value="16">
+      
+      <label for="body-size">Body Size:</label>
+      <input type="number" id="body-size" min="8" max="14" value="11">
+      
+      <label for="margin">Margins:</label>
+      <input type="number" id="margin" min="30" max="72" value="54">
+      
+      <label for="heading-color">Heading Color:</label>
+      <div class="color-picker">
+        <input type="color" id="heading-color" value="#000000">
+        <span id="heading-color-value">#000000</span>
+      </div>
+      
+      <label for="accent-color">Accent Color:</label>
+      <div class="color-picker">
+        <input type="color" id="accent-color" value="#1a73e8">
+        <span id="accent-color-value">#1a73e8</span>
+      </div>
+      
+      <button class="save-custom-style-btn" id="save-style-btn">Save Custom Style</button>
+    </div>
+    
+    <div class="style-preview">
+      <h3>Preview</h3>
+      <div id="style-preview-content">
+        <h4>This is a heading</h4>
+        <p>This is how your body text will look with the selected settings.</p>
+        <p>• This is a bullet point in your custom style</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="tab-content" id="advanced-tab">
+    <div class="form-group">
+      <label for="temp-slider">Temperature</label>
+      <input type="range" min="0" max="1" step="0.05" value="0.7" id="temp-slider">
+      <span id="temp-value">0.7</span>
+      <div class="model-info">Controls creativity: lower values are more focused, higher values are more creative.</div>
+    </div>
+    
+    <div class="form-group">
+      <label for="max-tokens">Max Output Length</label>
+      <select id="max-tokens">
+        <option value="1024">Default (1024 tokens)</option>
+        <option value="2048">Medium (2048 tokens)</option>
+        <option value="4096">Long (4096 tokens)</option>
+        <option value="8192">Very Long (8192 tokens)</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label>
+        <input type="checkbox" id="save-history"> Save conversations
+      </label>
+      <div class="model-info">Saves your resume creation conversations in your Google Drive.</div>
+    </div>
+  </div>
+  
+  <div class="button-row">
+    <button id="save-btn">Save Settings</button>
+    <button class="secondary" id="cancel-btn">Cancel</button>
+  </div>
+  
+  <div id="status-message"></div>
+  
+  <script>
+    // Load user settings on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      google.script.run
+        .withSuccessHandler(loadSettings)
+        .getUserProperties();
+      
+      // Load available fonts
+      google.script.run
+        .withSuccessHandler(loadFonts)
+        .getAvailableFonts();
+        
+      // Setup the tabs
+      setupTabs();
+      
+      // Setup preview updates
+      setupStylePreview();
+    });
+    
+    function loadSettings(props) {
+      if (props.apiKey) {
+        const apiKeyInput = document.getElementById('api-key');
+        apiKeyInput.value = props.apiKey;
+        
+        // Store original value for comparison on save
+        document.getElementById('save-btn').dataset.originalApiKey = props.apiKey;
+        
+        // Load available models if key exists
+        google.script.run
+          .withSuccessHandler(function(models) {
+            updateModelDropdown(models);
+            
+            // Set selected model if available
+            if (props.model) {
+              document.getElementById('model-select').value = props.model;
+            }
+          })
+          .getAvailableGeminiModels();
+      }
+      
+      if (props.model) {
+        document.getElementById('model-select').value = props.model;
+      }
+      
+      // Load advanced settings if available
+      if (props.settings) {
+        if (props.settings.temperature) {
+          const tempSlider = document.getElementById('temp-slider');
+          const tempValue = document.getElementById('temp-value');
+          tempSlider.value = props.settings.temperature;
+          tempValue.textContent = props.settings.temperature;
+        }
+        
+        if (props.settings.maxTokens) {
+          document.getElementById('max-tokens').value = props.settings.maxTokens;
+        }
+        
+        if (props.settings.saveHistory !== undefined) {
+          document.getElementById('save-history').checked = props.settings.saveHistory;
+        }
+      }
+    }
+    
+    function loadFonts(fonts) {
+      const headingFontSelect = document.getElementById('heading-font');
+      const bodyFontSelect = document.getElementById('body-font');
+      
+      fonts.forEach(font => {
+        const headingOption = document.createElement('option');
+        headingOption.value = font;
+        headingOption.text = font;
+        headingFontSelect.add(headingOption);
+        
+        const bodyOption = document.createElement('option');
+        bodyOption.value = font;
+        bodyOption.text = font;
+        bodyFontSelect.add(bodyOption);
+      });
+      
+      // Set default selected fonts
+      headingFontSelect.value = "Arial";
+      bodyFontSelect.value = "Arial";
+    }
+    
+    function setupTabs() {
+      const tabs = document.querySelectorAll('.tab');
+      const tabContents = document.querySelectorAll('.tab-content');
+
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          // Remove active class from all tabs and contents
+          tabs.forEach(t => t.classList.remove('active'));
+          tabContents.forEach(tc => tc.classList.remove('active'));
+
+          // Add active class to clicked tab and its content
+          tab.classList.add('active');
+          const tabId = tab.getAttribute('data-tab');
+          document.getElementById(`${tabId}-tab`).classList.add('active');
+        });
+      });
+    }
+
+    // Initialize tabs on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      setupTabs();
+      // ... rest of initialization code ...
+    });
+
+    function setupStylePreview() {
+      // Update preview when style settings change
+      document.getElementById('heading-font').addEventListener('change', updatePreview);
+      document.getElementById('body-font').addEventListener('change', updatePreview);
+      document.getElementById('heading-size').addEventListener('input', updatePreview);
+      document.getElementById('body-size').addEventListener('input', updatePreview);
+      document.getElementById('heading-color').addEventListener('input', function() {
+        document.getElementById('heading-color-value').textContent = this.value;
+        updatePreview();
+      });
+      document.getElementById('accent-color').addEventListener('input', function() {
+        document.getElementById('accent-color-value').textContent = this.value;
+        updatePreview();
+      });
+      
+      // Initial preview update
+      updatePreview();
+    }
+    
+    function updatePreview() {
+      const headingFont = document.getElementById('heading-font').value;
+      const bodyFont = document.getElementById('body-font').value;
+      const headingSize = document.getElementById('heading-size').value;
+      const bodySize = document.getElementById('body-size').value;
+      const headingColor = document.getElementById('heading-color').value;
+      const accentColor = document.getElementById('accent-color').value;
+      
+      const previewDiv = document.getElementById('style-preview-content');
+      const heading = previewDiv.querySelector('h4');
+      const paragraphs = previewDiv.querySelectorAll('p');
+      
+      // Apply styles to preview
+      heading.style.fontFamily = headingFont;
+      heading.style.fontSize = headingSize + 'px';
+      heading.style.color = headingColor;
+      
+      paragraphs.forEach(p => {
+        p.style.fontFamily = bodyFont;
+        p.style.fontSize = bodySize + 'px';
+        
+        if (p.textContent.includes('•')) {
+          p.style.color = accentColor;
+        }
+      });
+    }
+    
+    // Validate API key and fetch available models
+    document.getElementById('validate-btn').addEventListener('click', function() {
+      const btn = this;
+      const apiKey = document.getElementById('api-key').value.trim();
+      const validationMsg = document.getElementById('validationMessage');
+      
+      if (!apiKey) {
+        validationMsg.textContent = 'Please enter an API key';
+        validationMsg.className = 'invalid';
+        validationMsg.classList.remove('hidden');
+        return;
+      }
+      
+      btn.disabled = true;
+      btn.innerHTML = '<div class="loader"></div> Validating...';
+      validationMsg.classList.add('hidden');
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          btn.disabled = false;
+          btn.textContent = 'Validate Key';
+          
+          validationMsg.classList.remove('hidden');
+          if (result.valid) {
+            validationMsg.textContent = 'API key is valid!';
+            validationMsg.className = 'valid';
+            
+            // Update the model select dropdown with all available models
+            updateModelDropdown(result.models);
+            
+            // Update validation message with model count
+            setTimeout(function() {
+              validationMsg.textContent = `API key is valid! ${result.models ? result.models.length : 0} model(s) available.`;
+            }, 500);
+          } else {
+            validationMsg.textContent = result.message || 'API key is invalid';
+            validationMsg.className = 'invalid';
+          }
+        })
+        .withFailureHandler(function(error) {
+          btn.disabled = false;
+          btn.textContent = 'Validate Key';
+          validationMsg.classList.remove('hidden');
+          validationMsg.textContent = `Error: ${error.toString()}`;
+          validationMsg.className = 'invalid';
+        })
+        .validateAndInitializeModels(apiKey);
+    });
+    
+    // Save settings with model refresh if API key changed
+    document.getElementById('save-btn').addEventListener('click', function() {
+      const btn = this;
+      const apiKey = document.getElementById('api-key').value.trim();
+      const originalApiKey = btn.dataset.originalApiKey || '';
+      const model = document.getElementById('model-select').value;
+      const statusMsg = document.getElementById('status-message');
+      
+      // Gather advanced settings
+      const temperature = parseFloat(document.getElementById('temp-slider').value);
+      const maxTokens = parseInt(document.getElementById('max-tokens').value);
+      const saveHistory = document.getElementById('save-history').checked;
+      
+      if (!apiKey) {
+        statusMsg.textContent = 'Please enter an API key';
+        statusMsg.className = 'error';
+        return;
+      }
+      
+      btn.disabled = true;
+      btn.innerHTML = '<div class="loader"></div> Saving...';
+      
+      const properties = {
+        apiKey: apiKey,
+        model: model,
+        settings: {
+          temperature: temperature,
+          maxTokens: maxTokens,
+          saveHistory: saveHistory
+        }
+      };
+      
+      // If API key changed, we'll refresh models after saving
+      const apiKeyChanged = apiKey !== originalApiKey;
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result) {
+            // If API key changed, refresh models before closing
+            if (apiKeyChanged) {
+              statusMsg.textContent = 'Settings saved! Refreshing models...';
+              statusMsg.className = 'success';
+              
+              // Refresh models with new key
+              google.script.run
+                .withSuccessHandler(function() {
+                  statusMsg.textContent = 'Settings saved successfully!';
+                  setTimeout(function() {
+                    google.script.host.close();
+                  }, 1000);
+                })
+                .refreshAvailableModels();
+            } else {
+              // No key change, just close
+              statusMsg.textContent = 'Settings saved successfully!';
+              statusMsg.className = 'success';
+              setTimeout(function() {
+                google.script.host.close();
+              }, 1000);
+            }
+          } else {
+            btn.disabled = false;
+            btn.textContent = 'Save Settings';
+            statusMsg.textContent = 'Failed to save settings';
+            statusMsg.className = 'error';
+          }
+        })
+        .withFailureHandler(function(error) {
+          btn.disabled = false;
+          btn.textContent = 'Save Settings';
+          statusMsg.textContent = `Error: ${error.toString()}`;
+          statusMsg.className = 'error';
+        })
+        .saveUserProperties(properties);
+    });
+    
+    // Update temperature display
+    document.getElementById('temp-slider').addEventListener('input', function() {
+      document.getElementById('temp-value').textContent = this.value;
+    });
+    
+    // Save custom style
+    document.getElementById('save-style-btn').addEventListener('click', function() {
+      const btn = this;
+      const styleName = document.getElementById('style-name').value.trim() || 'My Custom Style';
+      
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+      
+      const styleOptions = {
+        name: styleName,
+        description: 'Custom user-created style',
+        headingFont: document.getElementById('heading-font').value,
+        bodyFont: document.getElementById('body-font').value,
+        heading1Size: parseInt(document.getElementById('heading-size').value),
+        bodySize: parseInt(document.getElementById('body-size').value),
+        marginTop: parseInt(document.getElementById('margin').value),
+        marginBottom: parseInt(document.getElementById('margin').value),
+        marginLeft: parseInt(document.getElementById('margin').value),
+        marginRight: parseInt(document.getElementById('margin').value),
+        headingColor: document.getElementById('heading-color').value,
+        accentColor: document.getElementById('accent-color').value
+      };
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          btn.disabled = false;
+          btn.textContent = 'Save Custom Style';
+          
+          if (result.success) {
+            const statusMsg = document.getElementById('status-message');
+            statusMsg.textContent = `Style "${styleName}" saved successfully!`;
+            statusMsg.className = 'success';
+          }
+        })
+        .withFailureHandler(function(error) {
+          btn.disabled = false;
+          btn.textContent = 'Save Custom Style';
+          
+          const statusMsg = document.getElementById('status-message');
+          statusMsg.textContent = `Error saving style: ${error.toString()}`;
+          statusMsg.className = 'error';
+        })
+        .createCustomStyle(styleOptions);
+    });
+    
+    // Cancel and close dialog
+    document.getElementById('cancel-btn').addEventListener('click', function() {
+      google.script.host.close();
+    });
+
+    function updateModelDropdown(models) {
+      const modelSelect = document.getElementById('model-select');
+      modelSelect.innerHTML = ''; // Clear existing options
+      
+      // Group models by version
+      const modelGroups = {
+        'Gemini 1.5': [],
+        'Gemini Pro': [],
+        'Other': []
+      };
+      
+      models.forEach(model => {
+        if (model.name.includes('1.5')) {
+          modelGroups['Gemini 1.5'].push(model);
+        } else if (model.name.includes('Pro')) {
+          modelGroups['Gemini Pro'].push(model);
+        } else {
+          modelGroups['Other'].push(model);
+        }
+      });
+      
+      // Add models by group
+      Object.entries(modelGroups).forEach(([groupName, groupModels]) => {
+        if (groupModels.length > 0) {
+          const optgroup = document.createElement('optgroup');
+          optgroup.label = groupName;
+          
+          groupModels.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model.id;
+            option.text = model.name;
+            if (model.description) {
+              option.title = model.description;
+            }
+            optgroup.appendChild(option);
+          });
+          
+          modelSelect.appendChild(optgroup);
+        }
+      });
+      
+      // Update model info text
+      const modelInfo = document.querySelector('.model-info');
+      const selectedModel = models.find(m => m.id === modelSelect.value);
+      if (selectedModel && selectedModel.description) {
+        modelInfo.textContent = selectedModel.description;
+      }
+    }
+    
+    // Add model selection change handler
+    document.getElementById('model-select').addEventListener('change', function() {
+      const modelInfo = document.querySelector('.model-info');
+      const models = JSON.parse(localStorage.getItem('availableModels') || '[]');
+      const selectedModel = models.find(m => m.id === this.value);
+      
+      if (selectedModel && selectedModel.description) {
+        modelInfo.textContent = selectedModel.description;
+      } else {
+        modelInfo.textContent = 'The model is used for generating content. Flash is faster but Pro may produce better quality results.';
+      }
+    });
+  </script>
+
+<style>
+/* Add these styles to fix tab display */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #ccc;
+  margin-bottom: 20px;
+  background: #f8f9fa;
+}
+
+.tab {
+  padding: 10px 20px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-bottom: none;
+  margin-bottom: -1px;
+  transition: all 0.3s ease;
+  background: #f0f0f0;
+}
+
+.tab:hover {
+  background: #e9ecef;
+}
+
+.tab.active {
+  background: white;
+  border-color: #ccc;
+  border-bottom-color: white;
+  font-weight: bold;
+  color: #1a73e8;
+}
+
+.tab-content {
+  display: none;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-top: none;
+  background: white;
+}
+
+.tab-content.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Add these styles to improve form layout */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #1a73e8;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
+}
+
+/* Add these styles for better button layout */
+.button-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+</style>
+</body>
+</html>
