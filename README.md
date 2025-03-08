@@ -101,14 +101,6 @@ Being open source under the MIT License, you’re free to use, modify, and distr
   - **Document Generation:**  
     Converts chat history into a structured document outline.
 
-- **`ChatIntegration.gs`**
-  - **AI Content Insertion:**  
-    Inserts AI-generated content into documents.
-  - **Document Analysis:**  
-    Provides context and suggestions for document improvements.
-  - **Guided Chat Initialization:**  
-    Begins guided chat sessions with contextual data.
-
 - **`ApiHandler.gs`**
   - **Gemini API Interaction:**  
     Implements classes to interact directly with the Gemini 2.0 API.
